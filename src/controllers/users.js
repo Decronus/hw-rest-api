@@ -51,6 +51,12 @@ const createUser = (request, response) => {
 
 const updateUser = (request, response) => {
   const { id } = request.params;
+
+  if (!usersData.find((user) => user.id === +id)) {
+    response.status(500);
+    response.send("Пользователя с таким id не существует");
+  }
+
   const { name, email } = request.body;
 
   response.status(200);
@@ -81,10 +87,63 @@ const deleteUser = (request, response) => {
   response.send("Пользователь успешно удалён");
 };
 
+const takeBook = (request, response) => {
+  const { id } = request.params;
+
+  if (!usersData.find((user) => user.id === +id)) {
+    response.status(500);
+    response.send("Пользователя с таким id не существует");
+  }
+
+  const { book } = request.body;
+
+  const user = usersData.find((user) => user.id === +id);
+  if (user.books.includes(book)) {
+    response.status(500);
+    response.send("У пользователя уже есть такая книга");
+    return;
+  }
+  usersData = usersData.filter((user) => user.id !== +id);
+
+  user.books.push(book);
+  usersData.push(user);
+
+  response.status(201);
+  response.send("Книга успешно добавлена");
+};
+
+const giveBook = (request, response) => {
+  const { id } = request.params;
+
+  if (!usersData.find((user) => user.id === +id)) {
+    response.status(500);
+    response.send("Пользователя с таким id не существует");
+  }
+
+  const { book } = request.body;
+
+  const user = usersData.find((user) => user.id === +id);
+
+  if (!user.books.includes(book)) {
+    response.status(500);
+    response.send("Пользователь не может отдать книгу, которой у него нет");
+    return;
+  }
+  usersData = usersData.filter((user) => user.id !== +id);
+
+  user.books.splice(user.books.indexOf(book, 1));
+  usersData.push(user);
+
+  response.status(200);
+  response.send("Книга успешно удалена");
+};
+
 module.exports = {
   getUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
+  takeBook,
+  giveBook,
 };
